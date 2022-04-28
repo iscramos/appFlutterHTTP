@@ -1,25 +1,34 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_get/models/usuarios.model.dart';
-import 'package:http/http.dart';
 
+const posi = 0;
 void main() => runApp(const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Principal',
-      home: PantallaUno(),
+      home: PantallaUno(0),
     ));
 
-class PantallaUsuarios extends StatelessWidget {
+class PantallaUsuarios extends StatefulWidget {
+  const PantallaUsuarios({Key? key}) : super(key: key);
+
+  @override
+  _ListadoUsuarios createState() => _ListadoUsuarios();
+}
+
+class _ListadoUsuarios extends State {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => PantallaNuevo()));
+        onPressed: () async {
+          await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PantallaNuevo()))
+              .then((value) => _stateUpdate());
         },
         child: const Icon(Icons.add),
         backgroundColor: Colors.green,
@@ -40,13 +49,17 @@ class PantallaUsuarios extends StatelessWidget {
                         child: Text((i + 1).toString()),
                       ),
                       trailing: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PantallaEliminar(
-                                      registroEliminar: snapshot.data[i],
-                                      idU: snapshot.data[i].idUsuario)));
+                        style: TextButton.styleFrom(
+                          primary: Colors.red,
+                        ),
+                        onPressed: () async {
+                          await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PantallaEliminar(
+                                          registroEliminar: snapshot.data[i],
+                                          idU: snapshot.data[i].idUsuario)))
+                              .then((value) => _stateUpdate());
                         },
                         child: const Text('Eliminar'),
                       ),
@@ -61,10 +74,14 @@ class PantallaUsuarios extends StatelessWidget {
       ),
     );
   }
+
+  void _stateUpdate() {
+    setState(() {});
+  }
 }
 
 class PantallaUno extends StatefulWidget {
-  const PantallaUno({Key? key}) : super(key: key);
+  const PantallaUno(int i, {Key? key}) : super(key: key);
 
   @override
   State<PantallaUno> createState() => _PantallaUno();
@@ -72,32 +89,36 @@ class PantallaUno extends StatefulWidget {
 
 // Esta clase es para navegar con los botones del bottom
 class _PantallaUno extends State<PantallaUno> {
-  int _selectedIndex = 0;
-  final List<Widget> _widgetOptions = <Widget>[
+  int selectedIndex = 0;
+
+  final List<Widget> widgetOptions = <Widget>[
     const Text('Bienvenidos a la sesión II'),
-    PantallaUsuarios(),
+    const PantallaUsuarios(),
   ];
 
-  void _onItemTapped(int index) {
+  onItemTapped(int index) {
+    //print('Opcíon -> $index');
     setState(() {
-      _selectedIndex = index;
+      selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Obtener y enviar información HTTP')),
+      appBar: AppBar(
+          title: const Text('Obtener y enviar información HTTP'),
+          automaticallyImplyLeading: false),
       body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+        child: widgetOptions.elementAt(selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
           BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Usuarios'),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        currentIndex: selectedIndex,
+        onTap: onItemTapped,
       ),
     );
   }
@@ -119,6 +140,8 @@ Future<List<Usuarios>> getUsuarios() async {
 
 // Pantalla nuevo
 class PantallaNuevo extends StatelessWidget {
+  const PantallaNuevo({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,13 +151,15 @@ class PantallaNuevo extends StatelessWidget {
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-        child: MiFormulario(),
+        child: const MiFormulario(),
       ),
     );
   }
 }
 
 class MiFormulario extends StatefulWidget {
+  const MiFormulario({Key? key}) : super(key: key);
+
   @override
   Formulario createState() {
     return Formulario();
@@ -146,7 +171,7 @@ class Formulario extends State<MiFormulario> {
   final _miCorreo = TextEditingController();
   final _miPassword = TextEditingController();
 
-  Future<http.Response>? _futureUsuario;
+  //Future<http.Response>? _futureUsuario;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -164,6 +189,7 @@ class Formulario extends State<MiFormulario> {
               if (value == '') {
                 return '*';
               }
+              return null;
             },
           ),
           TextFormField(
@@ -173,6 +199,7 @@ class Formulario extends State<MiFormulario> {
               if (value == '') {
                 return '*';
               }
+              return null;
             },
           ),
           TextFormField(
@@ -183,6 +210,7 @@ class Formulario extends State<MiFormulario> {
               if (value == '') {
                 return '*';
               }
+              return null;
             },
           ),
           Padding(
@@ -190,17 +218,22 @@ class Formulario extends State<MiFormulario> {
             child: ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('Saved')));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Usuario guardado...'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ));
 
-                  Future.delayed(const Duration(milliseconds: 1000), () {
+                  Future.delayed(const Duration(seconds: 2), () {
                     setState(() {
-                      _futureUsuario = createUsuario(
+                      createUsuario(
                           _miNombre.text, _miCorreo.text, _miPassword.text);
-                      Navigator.push(
+
+                      /*Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const PantallaUno()));
+                              builder: (context) => const PantallaUno(1)));*/
+                      Navigator.pop(context);
                     });
                   });
                 }
@@ -270,24 +303,34 @@ class PantallaEliminar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Eliminar'),
-      content: Text('¿Desea eliminar a ${registroEliminar.nombre} ?'),
+      title: const Text('Mensaje'),
+      content: Text('¿Desea eliminar a ${registroEliminar.nombre} ?',
+          style: const TextStyle(fontSize: 16, color: Colors.red)),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context, 'No'),
-          child: const Text('Cancel'),
+          child: const Text('No'),
         ),
         TextButton(
+          style: TextButton.styleFrom(
+            primary: Colors.red,
+          ),
           onPressed: () {
             final regPersonitaEliminar = Personita();
             regPersonitaEliminar.eliminarPesona(idU);
+            /*Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PantallaUno(0, posicion: 1)));*/
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('¡${registroEliminar.nombre} eliminado!'),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Colors.red,
+            ));
 
-            //print('minombre: ' + valores.name);
-
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => PantallaUno()));
+            Navigator.pop(context);
           } /*=> Navigator.pop(context, 'Sí')*/,
-          child: const Text('Delete'),
+          child: const Text('Sí'),
         ),
       ],
     );
@@ -301,7 +344,7 @@ class Personita {
 }
 
 Future<http.Request?> eliminarUsuario(String idU) async {
-  print(idU);
+  //print(idU);
   var headers = {'Content-Type': 'application/json'};
   var request = http.Request(
       'GET', Uri.parse('https://cenedic4.ucol.mx/demopa/delUsuario.php'));
@@ -311,9 +354,9 @@ Future<http.Request?> eliminarUsuario(String idU) async {
   http.StreamedResponse response = await request.send();
 
   if (response.statusCode == 200) {
-    print(await response.stream.bytesToString());
+    response.stream.bytesToString();
   } else {
-    print(response.reasonPhrase);
+    response.reasonPhrase;
   }
   return null;
 }
