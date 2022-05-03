@@ -224,17 +224,18 @@ class Formulario extends State<MiFormulario> {
                     backgroundColor: Colors.green,
                   ));
 
-                  Future.delayed(const Duration(seconds: 2), () {
-                    setState(() {
-                      createUsuario(
-                          _miNombre.text, _miCorreo.text, _miPassword.text);
+                  setState(() {
+                    createUsuario(
+                        _miNombre.text, _miCorreo.text, _miPassword.text);
 
-                      /*Navigator.push(
+                    /*Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const PantallaUno(1)));*/
-                      Navigator.pop(context);
-                    });
+                  });
+
+                  Future.delayed(const Duration(seconds: 2), () async {
+                    Navigator.pop(context);
                   });
                 }
               },
@@ -318,17 +319,16 @@ class PantallaEliminar extends StatelessWidget {
           onPressed: () {
             final regPersonitaEliminar = Personita();
             regPersonitaEliminar.eliminarPesona(idU);
-            /*Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PantallaUno(0, posicion: 1)));*/
+
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('¡${registroEliminar.nombre} eliminado!'),
-              duration: const Duration(seconds: 2),
+              duration: const Duration(seconds: 3),
               backgroundColor: Colors.red,
             ));
 
-            Navigator.pop(context);
+            Future.delayed(const Duration(seconds: 2), () async {
+              Navigator.pop(context);
+            });
           } /*=> Navigator.pop(context, 'Sí')*/,
           child: const Text('Sí'),
         ),
